@@ -1,48 +1,74 @@
-
-// export default Login;
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';  // For navigation
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import './Login.css';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();  // Initialize useNavigate hook
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState({});
+    const navigate = useNavigate(); // Initialize useNavigate
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:3002/api/users/login', { username, password });
-      console.log('Login successful', response.data);
-      // Redirect to user home page
-      navigate('/user-homepage');
-    } catch (error) {
-      console.error('Error logging in', error);
-    }
-  };
+    const validateEmail = (email) => {
+        const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        return re.test(email);
+    };
 
-  return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
+    const validatePassword = (password) => {
+        const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+        return re.test(password);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const newErrors = {};
+
+        if (!validateEmail(email)) {
+            newErrors.email = 'Invalid email format. Only @gmail.com is allowed.';
+        }
+
+        if (!validatePassword(password)) {
+            newErrors.password = 'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character.';
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            // Handle login logic here
+            console.log('Logging in with:', { email, password });
+
+            // Redirect to UserHomePage upon successful login
+            navigate('/user-home');
+        }
+    };
+
+    return (
+        <div className="login-container">
+            <h2>Login</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="email">Email:</label>
+                    <input
+                        type="text"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    {errors.email && <p className="error">{errors.email}</p>}
+                </div>
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    {errors.password && <p className="error">{errors.password}</p>}
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    );
 };
 
 export default Login;
